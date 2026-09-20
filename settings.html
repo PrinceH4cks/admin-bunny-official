@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETTINGS - ADMIN PANEL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        *,
+        *::before,
+        *::after {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        :focus { outline: none; }
+
+        :root {
+            --bg: #0a0f1e;
+            --panel: #111827;
+            --panel-2: #1a2234;
+            --border: rgba(99, 102, 241, 0.18);
+            --accent: #6366f1;
+            --accent-2: #ec4899;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 230px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            padding: 20px 14px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px 18px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+        }
+
+        .sidebar .logo .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .sidebar .logo .name {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .sidebar .logo .role {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            user-select: none;
+        }
+
+        .nav-item:hover { background: var(--panel-2); color: var(--text); }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+            color: #fff;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item .ic { font-size: 16px; width: 22px; text-align: center; }
+        .nav-item .nav-arrow { margin-left: auto; font-size: 10px; transition: transform 0.25s; }
+        .nav-item.active .nav-arrow { transform: rotate(180deg); }
+        .nav-sub { display: none; padding: 2px 0 6px 0; }
+        .nav-item.active + .nav-sub { display: block; }
+        .nav-sub-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px 12px 40px;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .nav-sub-item:hover { background: var(--panel-2); color: var(--text); }
+        .nav-sub-item.active { background: rgba(99, 102, 241, 0.2); color: #fff; border: 1px solid var(--border); }
+
+        .svg-ic { display: inline-block; vertical-align: middle; flex-shrink: 0; pointer-events: none; }
+        .nav-sub-item .svg-ic { margin-right: 2px; }
+        .btn .svg-ic { margin-right: 6px; }
+
+        .nav-item[data-view="floating"] .ic, .m-item[data-view="floating"] .ic { color: #22d3ee; }
+        .nav-item[data-view="overview"] .ic, .m-item[data-view="overview"] .ic { color: #818cf8; }
+        .nav-item[data-view="keys"] .ic, .m-item[data-view="keys"] .ic { color: #fbbf24; }
+        .nav-item[data-view="settings"] .ic, .m-item[data-view="settings"] .ic { color: #38bdf8; }
+        .nav-sub-item[data-sub="general"] .svg-ic { color: #38bdf8; }
+
+
+        .sidebar .logout {
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .sidebar .logout:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .main {
+            margin-left: 230px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .topbar h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .topbar .user-chip {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .topbar-exit {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
+            border-radius: 12px;
+            padding: 9px 14px;
+            font-weight: 800;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .topbar-exit:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"], input[type="url"], input[type="password"], input[type="number"], input[type="datetime-local"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.35);
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 44px;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+        }
+
+        .field-hint {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #8a85b0;
+            line-height: 1.4;
+        }
+
+        .field-hint b { color: #ff0080; font-weight: 700; }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-red { background: rgba(239, 68, 68, 0.15); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-small { padding: 8px 14px; font-size: 11px; }
+        .btn-outline { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); color: var(--text); }
+        .btn-outline:hover { background: rgba(255,255,255,0.12); }
+
+        .card-sub { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+        .card-sub b { color: #ff0080; }
+
+
+        .switch-row { display: flex; align-items: center; gap: 12px; padding-top: 4px; }
+        .switch { position: relative; display: inline-block; width: 52px; height: 28px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            transition: all 0.25s;
+        }
+        .switch .slider::before {
+            content: "";
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            top: 3px;
+            background: #94a3b8;
+            border-radius: 50%;
+            transition: all 0.25s;
+        }
+        .switch input:checked + .slider {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-color: transparent;
+        }
+        .switch input:checked + .slider::before {
+            transform: translateX(24px);
+            background: #fff;
+        }
+
+        .switch-status {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            max-width: 92vw;
+            padding: 13px 22px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.97);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.4;
+            text-align: center;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+        }
+        .toast::before {
+            content: 'âœ”';
+            color: #34d399;
+            font-size: 15px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .toast.error {
+            background: rgba(51, 15, 22, 0.97);
+            border-color: rgba(248, 113, 113, 0.5);
+        }
+        .toast.error::before {
+            content: 'âœ–';
+            color: #f87171;
+        }
+        @media (max-width: 700px) {
+            .toast {
+                bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+                font-size: 13.5px;
+                padding: 12px 18px;
+            }
+        }
+
+        .mobile-nav {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { width: 72px; padding: 14px 8px; }
+            .sidebar .logo .name, .sidebar .logo .role, .nav-item span.txt { display: none; }
+            .nav-item { justify-content: center; }
+            .nav-item .ic { width: auto; font-size: 18px; }
+            .sidebar .logout { font-size: 11px; padding: 10px 4px; }
+            .main { margin-left: 72px; padding: 16px; }
+            .topbar-exit { display: block; }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 0 12px calc(120px + env(safe-area-inset-bottom, 0px)); }
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+                left: 14px;
+                right: 14px;
+                padding: 6px 8px;
+                background: rgba(22, 28, 46, 0.97);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 28px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+                z-index: 40;
+                justify-content: space-around;
+            }
+
+            .mobile-nav .m-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                flex: 1;
+                max-width: 84px;
+                padding: 7px 6px 6px;
+                border-radius: 18px;
+                font-size: 9.5px;
+                font-weight: 700;
+                color: var(--muted);
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                user-select: none;
+                transition: all 0.25s ease;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .mobile-nav .m-item .ic {
+                font-size: 20px;
+                line-height: 1;
+                filter: grayscale(0.5) brightness(0.85);
+                transition: all 0.25s ease;
+            }
+
+            .mobile-nav .m-item.active {
+                color: #fff;
+                background: linear-gradient(135deg, #6366f1, #ec4899);
+                box-shadow: 0 6px 16px -2px rgba(99, 102, 241, 0.5), 0 2px 6px -1px rgba(236, 72, 153, 0.4);
+            }
+
+            .mobile-nav .m-item.active .ic {
+                filter: none;
+                transform: scale(1.08);
+            }
+
+            .mobile-nav .m-item:active { transform: scale(0.94); }
+
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 30;
+                background: rgba(10, 15, 30, 0.88);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                margin: 0 -12px 16px;
+                padding: 14px 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.4);
+            }
+            .topbar h1 { font-size: 16px; }
+            .topbar .user-chip { padding: 7px 12px; font-size: 11px; max-width: 45%; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .topbar-exit { display: block; padding: 7px 12px; font-size: 10px; }
+
+            .card { padding: 14px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* ==== UI ENHANCEMENTS: glow / glass / animation / touch ==== */
+        body {
+            background: #0a0f1e;
+        }
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            opacity: 0.16;
+            z-index: 0;
+            pointer-events: none;
+        }
+        body::before {
+            top: -140px; left: -140px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.55), transparent 70%);
+        }
+        body::after {
+            bottom: -160px; right: -120px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.55), transparent 70%);
+        }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.15); }
+        }
+        @keyframes orbFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-50px, -50px) scale(1.1); }
+        }
+
+        @media (max-width: 700px) { body::before, body::after { display: none; } }
+        .main { position: relative; z-index: 1; }
+
+        .sidebar {
+            background: #111827;
+            box-shadow: 2px 0 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar .logo .icon {
+            box-shadow: 0 0 22px rgba(99, 102, 241, 0.55);
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+        @keyframes iconPulse {
+            0%, 100% { box-shadow: 0 0 18px rgba(99, 102, 241, 0.45); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.6); }
+        }
+
+        .nav-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        .nav-item:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); }
+        .nav-item.active {
+            box-shadow: 0 4px 18px -2px rgba(99, 102, 241, 0.5);
+            animation: navGlow 2.5s ease-in-out infinite;
+        }
+        @keyframes navGlow {
+            0%, 100% { box-shadow: 0 4px 18px -2px rgba(99, 102, 241, 0.45); }
+            50% { box-shadow: 0 4px 26px -2px rgba(236, 72, 153, 0.55); }
+        }
+        .nav-item:active { transform: scale(0.97); }
+
+        .sidebar .logout { transition: all 0.25s ease; }
+        .sidebar .logout:hover { transform: translateY(-1px); box-shadow: 0 6px 18px -4px rgba(239, 68, 68, 0.5); }
+        .sidebar .logout:active { transform: scale(0.97); }
+
+        .card {
+            background: rgba(17, 24, 39, 0.97);
+            border: 1px solid rgba(99, 102, 241, 0.22);
+            box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            animation: rise 0.45s ease both;
+        }
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn { transition: all 0.25s ease; }
+        .btn:not(.btn-red):not(.btn-green):not(.btn-ghost) {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            background-size: 200% 200%;
+            animation: btnShift 6s ease infinite;
+            box-shadow: 0 10px 26px -8px rgba(99, 102, 241, 0.7);
+        }
+        @keyframes btnShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .btn:hover { filter: brightness(1.12); transform: translateY(-2px); }
+        .btn:not(.btn-red):not(.btn-green):not(.btn-ghost):hover { box-shadow: 0 14px 32px -8px rgba(99, 102, 241, 0.9); }
+        .btn-red:hover { box-shadow: 0 10px 24px -6px rgba(239, 68, 68, 0.5); }
+        .btn-green:hover { box-shadow: 0 10px 24px -6px rgba(16, 185, 129, 0.6); }
+        .btn-ghost:hover { box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.4); }
+        .btn:active { transform: translateY(0) scale(0.96); }
+
+        .topbar .user-chip {
+            background: rgba(17, 24, 39, 0.97);
+        }
+        @media (min-width: 701px) {
+            .topbar .user-chip {
+                color: transparent;
+                text-shadow: 0 0 8px rgba(148, 163, 184, 0.75);
+                cursor: pointer;
+                user-select: none;
+                transition: color 0.25s ease, text-shadow 0.25s ease;
+            }
+            .topbar .user-chip:hover {
+                color: var(--muted);
+                text-shadow: none;
+            }
+        }
+        .topbar-exit { transition: all 0.25s ease; }
+        .topbar-exit:hover { box-shadow: 0 6px 16px -4px rgba(239, 68, 68, 0.4); }
+        .topbar-exit:active { transform: scale(0.96); }
+
+        input[type="text"], input[type="url"], input[type="password"], input[type="number"], input[type="datetime-local"], select, textarea {
+            background: rgba(0, 0, 0, 0.4);
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22), 0 0 18px rgba(99, 102, 241, 0.25);
+        }
+
+        .list-item {
+            background: rgba(26, 34, 52, 0.97);
+            transition: all 0.25s ease;
+            animation: rise 0.45s ease both;
+        }
+        .list-item:nth-child(2) { animation-delay: 0.05s; }
+        .list-item:nth-child(3) { animation-delay: 0.1s; }
+        .list-item:nth-child(4) { animation-delay: 0.15s; }
+        .list-item:nth-child(5) { animation-delay: 0.2s; }
+        .list-item:nth-child(6) { animation-delay: 0.25s; }
+        .list-item:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.15);
+        }
+        .list-item:active { transform: scale(0.985); }
+
+        .stat-card {
+            background: rgba(17, 24, 39, 0.97);
+            transition: all 0.25s ease;
+            animation: rise 0.45s ease both;
+        }
+        .stat-card:hover { transform: translateY(-3px); border-color: rgba(99, 102, 241, 0.4); box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.6); }
+
+        .modal {
+            background: rgba(17, 24, 39, 0.98);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
+            animation: modalIn 0.28s ease both;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-overlay.show { animation: fadeIn 0.25s ease both; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .toast {
+            animation: toastIn 0.35s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) scale(0.92); }
+            to { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
+        @media (max-width: 700px) {
+            .toast { animation-name: toastInMobile; }
+            @keyframes toastInMobile {
+                from { opacity: 0; transform: translateX(-50%) scale(0.9); }
+                to { opacity: 1; transform: translateX(-50%) scale(1); }
+            }
+        }
+
+        ::selection { background: rgba(99, 102, 241, 0.4); }
+        ::-webkit-scrollbar { width: 9px; height: 9px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.35); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.55); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+        .dev-fab { position: fixed; bottom: 30px; right: 30px; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #ec4899); border: none; color: #fff; font-size: 22px; cursor: pointer; box-shadow: 0 8px 28px rgba(99,102,241,0.5); display: flex; align-items: center; justify-content: center; z-index: 999; transition: all 0.3s; animation: fabPulse 2s ease-in-out infinite; text-decoration: none; }
+        .dev-fab:hover { transform: scale(1.1); box-shadow: 0 12px 36px rgba(99,102,241,0.6); }
+        @keyframes fabPulse { 0%,100% { box-shadow: 0 8px 28px rgba(99,102,241,0.5); } 50% { box-shadow: 0 8px 36px rgba(236,72,153,0.6); } }
+        @media (max-width: 700px) { .dev-fab { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); right: 20px; width: 48px; height: 48px; } }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+            "firebase/analytics": "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+            "firebase/database": "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="icon"><svg class="svg-ic" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8.5 11l2.5 2.5L15.5 8.5" stroke="#fde047" stroke-width="2.4"/></svg></div>
+            <div>
+                <div class="name">BUNNY OFFICIAL</div>
+                <div class="role">Admin Panel</div>
+            </div>
+        </div>
+
+        <div class="nav-item" data-view="overview"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="txt">Overview</span></div>
+        <div class="nav-item" data-view="keys"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.5 12.5 20 3M14 9l3 3M17.5 5.5l3 3"/></svg></span><span class="txt">User Keys</span></div>
+        <div class="nav-item" data-view="floating"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span><span class="txt">Floating Buttons</span></div>
+        <div class="nav-item active" data-view="settings"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg></span><span class="txt">Settings</span><span class="nav-arrow">â–¾</span></div>
+        <div class="nav-sub" id="settingsSub">
+            <div class="nav-sub-item active" data-sub="general" onclick="switchSettingsTab('general')"><svg class="svg-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 10h6M9 14h6M9 18h4"/></svg> Site Settings</div>
+        </div>
+
+        <button class="logout" id="logoutBtn">LOGOUT</button>
+    </aside>
+
+    <nav class="mobile-nav" id="mobileNav">
+        <div class="m-item" data-view="overview"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Home</div>
+        <div class="m-item" data-view="keys"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.5 12.5 20 3M14 9l3 3M17.5 5.5l3 3"/></svg></span>Keys</div>
+        <div class="m-item" data-view="floating"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span>Float</div>
+        <div class="m-item active" data-view="settings"><span class="ic"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg></span>Settings</div>
+    </nav>
+
+    <div class="main">
+        <div class="topbar">
+            <h1 id="pageTitle">Settings</h1>
+            <div class="topbar-right">
+                <div class="user-chip" id="adminEmail">Admin</div>
+                <button class="topbar-exit" onclick="document.getElementById('logoutBtn').click()"><svg class="svg-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M15 16l4-4-4-4M19 12H9"/></svg> EXIT</button>
+            </div>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>Site Settings</h3>
+            <div class="form-row">
+                <div>
+                    <label>App Name</label>
+                    <input type="text" id="setName" placeholder="PRINCE HACKS">
+                    <div class="field-hint">Floating panel + login page me ye naam dikhega.</div>
+                </div>
+                <div>
+                    <label>Edition</label>
+                    <input type="text" id="setEdition" placeholder="FREE FIRE EDITION">
+                    <div class="field-hint">App me 'Free Fire Edition' wali line yahi se change hogi.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Site Title</label>
+                    <input type="text" id="setTitle" placeholder="PRINCE HACKS">
+                </div>
+                <div>
+                    <label>Telegram Link</label>
+                    <input type="text" id="setTg" placeholder="https://t.me/...">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>WhatsApp Link</label>
+                    <input type="text" id="setWa" placeholder="https://whatsapp.com/channel/...">
+                </div>
+                <div>
+                    <label>Website Link</label>
+                    <input type="text" id="setWebsite" placeholder="https://yoursite.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Find Password Button Link</label>
+                    <input type="text" id="setFindPass" placeholder="https://...">
+                </div>
+                <div></div>
+            </div>
+            <button class="btn" onclick="saveSiteSettings()">SAVE SETTINGS</button>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>Maintenance Mode</h3>
+            <div class="form-row">
+                <div>
+                    <label>Status</label>
+                    <div class="switch-row">
+                        <label class="switch">
+                            <input type="checkbox" id="setMaintenance">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="switch-status" id="maintenanceStatusText">OFF</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Maintenance Heading / Text</label>
+                    <input type="text" id="setMaintText" placeholder="We are under maintenance, please try again later...">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Button Label</label>
+                    <input type="text" id="setMaintLinkLabel" placeholder="e.g. CONTACT ADMIN">
+                </div>
+                <div>
+                    <label>Button Link</label>
+                    <input type="text" id="setMaintLink" placeholder="https://t.me/...">
+                </div>
+            </div>
+            <button class="btn" onclick="saveMaintenance()">SAVE MAINTENANCE</button>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>Subscribe / Join Popup</h3>
+            <div class="form-row">
+                <div>
+                    <label>Popup Enabled</label>
+                    <div class="switch-row">
+                        <label class="switch">
+                            <input type="checkbox" id="setPopupEnabled">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="switch-status" id="popupStatusText">OFF</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Popup Title</label>
+                    <input type="text" id="setPopupTitle" placeholder="JOIN OUR COMMUNITY">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Popup Text</label>
+                    <input type="text" id="setPopupText" placeholder="Subscribe and join us to get latest updates!">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Button Label</label>
+                    <input type="text" id="setPopupBtnLabel" placeholder="e.g. SUBSCRIBE / JOIN">
+                </div>
+                <div>
+                    <label>Button Link</label>
+                    <input type="text" id="setPopupBtnLink" placeholder="https://t.me/...">
+                </div>
+            </div>
+            <button class="btn" onclick="savePopupSettings()">SAVE POPUP</button>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>Force Subscribe / Redirect</h3>
+            <div class="form-row">
+                <div>
+                    <label>Force Redirect Enabled</label>
+                    <div class="switch-row">
+                        <label class="switch">
+                            <input type="checkbox" id="setForceRedirectEnabled">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="switch-status" id="forceRedirectStatusText">OFF</span>
+                    </div>
+                    <div class="field-hint">When <b>ON</b>, every time the user opens the app it will automatically jump to the link below — no tap needed.</div>
+                </div>
+                <div>
+                    <label>Redirect Link</label>
+                    <input type="text" id="setForceRedirectLink" placeholder="https://t.me/...">
+                </div>
+            </div>
+            <button class="btn" onclick="saveForceRedirect()">SAVE FORCE REDIRECT</button>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>Setup Video / Banner</h3>
+            <div class="form-row">
+                <div>
+                    <label>Banner Enabled</label>
+                    <div class="switch-row">
+                        <label class="switch">
+                            <input type="checkbox" id="setBannerEnabled">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="switch-status" id="bannerStatusText">OFF</span>
+                    </div>
+                    <div class="field-hint">When <b>ON</b>, a photo banner with setup video link will show on the login page.</div>
+                </div>
+                <div>
+                    <label>Banner Image URL</label>
+                    <input type="text" id="setBannerUrl" placeholder="https://i.imgur.com/abc123.png">
+                    <div class="field-hint">Direct image link (jpg/png). Banner size <b>16:9 ratio</b> recommended. Example: imgur direct link.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Setup Video Link</label>
+                    <input type="text" id="setSetupVideoLink" placeholder="https://youtube.com/watch?v=...">
+                    <div class="field-hint">YouTube / any video link. User will be redirected when they tap the banner play button.</div>
+                </div>
+            </div>
+            <button class="btn" onclick="saveSetupBanner()">SAVE BANNER</button>
+            <div id="bannerPreview" style="margin-top:12px; display:none; border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+                <img id="bannerPreviewImg" style="width:100%; max-height:200px; object-fit:cover; display:block;" alt="Banner Preview">
+            </div>
+        </div>
+
+        <div class="card settings-card" data-sec="general">
+            <h3>App Update / Version Push</h3>
+            <div class="form-row">
+                <div>
+                    <label>Latest Version (number)</label>
+                    <input type="number" id="setUpdateLatest" min="1" placeholder="e.g. 2">
+                    <div class="field-hint">App ki current version se bada number dalo. Example: app v1 hai to 2 dalo â†’ v1 users ko update aayega.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Version Name (line)</label>
+                    <input type="text" id="setUpdateVersionName" placeholder="e.g. v2.0">
+                </div>
+                <div>
+                    <label>Update Type</label>
+                    <select id="setUpdateType">
+                        <option value="link">Link (browser me khulega)</option>
+                        <option value="apk">Direct (app me download + install)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Update Link</label>
+                    <input type="text" id="setUpdateLink" placeholder="https://... (link ya direct APK url)">
+                    <div class="field-hint"><b>Link type:</b> mediafire page ya koi bhi link. <b>Direct type:</b> APK ka <u>direct download</u> URL (mediafire page nahi) — warna download fail hoga.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Update Note (line)</label>
+                    <input type="text" id="setUpdateNote" placeholder="e.g. Bug fixes + new features">
+                </div>
+            </div>
+            <button class="btn" onclick="saveAppUpdate()">PUSH UPDATE</button>
+            <p class="card-sub" style="margin-top:8px;">Note: <b>Latest Version number</b> hamesha badhao. PUSH dabaane par update sab users ko turant milta hai. Kisi ko bhejne se rokna ho to same/chhota number push karo (e.g. 1) — update band ho jayega.</p>
+            <div id="appUpdateLiveBox" style="margin-top:12px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--panel-2);">
+                <div style="font-size:12px; letter-spacing:.5px; color:var(--muted); margin-bottom:6px;">CURRENTLY RUNNING UPDATE</div>
+                <div id="appUpdateLiveInfo" style="color:var(--text); font-size:13px; line-height:1.5;">Loading...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <a href="developer.html" class="dev-fab" title="Developer Support"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "firebase/auth";
+        import { ref, get, set, update } from "firebase/database";
+
+        window.auth = auth;
+        window.db = db;
+        window.signOut = signOut;
+        window.ref = ref;
+        window.get = get;
+        window.update = update;
+
+        function applyAdminChip() {
+            const el = document.getElementById("adminEmail");
+            const isMobile = window.matchMedia("(max-width: 900px)").matches || window.matchMedia("(pointer: coarse)").matches;
+            el.innerText = isMobile ? "Admin" : (window.adminEmailAddr || "");
+        }
+        window.applyAdminChip = applyAdminChip;
+        window.addEventListener("resize", applyAdminChip);
+
+        onAuthStateChanged(auth, function(user) {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+            const loginTime = parseInt(localStorage.getItem("adminLoginTime") || "0", 10);
+            if (!loginTime) {
+                localStorage.setItem("adminLoginTime", String(Date.now()));
+            } else if (Date.now() - loginTime > 24 * 60 * 60 * 1000) {
+                signOut(auth).then(function() {
+                    sessionStorage.removeItem("adminLoggedIn");
+                    localStorage.removeItem("adminLoginTime");
+                    window.location.href = "index.html";
+                });
+                return;
+            }
+            window.adminEmailAddr = user.email;
+            applyAdminChip();
+            loadSiteSettings();
+            loadAppUpdate();
+            loadSetupBanner();
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+            signOut(auth).then(function() {
+                sessionStorage.removeItem("adminLoggedIn");
+                window.location.href = "index.html";
+            });
+        });
+
+        document.querySelectorAll(".nav-item, .m-item").forEach(function(item) {
+            item.addEventListener("click", function() {
+                var view = item.dataset.view;
+                if (view === "logout") {
+                    document.getElementById("logoutBtn").click();
+                    return;
+                }
+                if (view === "settings") return;
+                if (view === "floating") {
+                    window.location.href = "floating.html";
+                    return;
+                }
+                if (view === "keys") {
+                    window.location.href = "keys.html";
+                    return;
+                }
+                window.location.href = "dashboard.html?view=" + view;
+            });
+        });
+
+        function showToast(msg, isError) {
+            const toast = document.getElementById("toast");
+            toast.innerText = msg;
+            toast.className = "toast" + (isError ? " error" : "");
+            toast.style.display = "flex";
+            toast.style.animation = "none";
+            void toast.offsetWidth;
+            toast.style.animation = "";
+            setTimeout(function() { toast.style.display = "none"; }, 2600);
+        }
+        window.showToast = showToast;
+
+        function loadSiteSettings() {
+            get(ref(db, "siteSettings")).then(function(snap) {
+                if (!snap.exists()) return;
+                const s = snap.val();
+                if (s.name) document.getElementById("setName").value = s.name;
+                if (s.edition) document.getElementById("setEdition").value = s.edition;
+                if (s.title) document.getElementById("setTitle").value = s.title;
+                if (s.tgLink) document.getElementById("setTg").value = s.tgLink;
+                if (s.waLink) document.getElementById("setWa").value = s.waLink;
+                if (s.findPassLink) document.getElementById("setFindPass").value = s.findPassLink;
+                if (s.websiteLink) document.getElementById("setWebsite").value = s.websiteLink;
+                if (typeof s.maintenance === "boolean") {
+                    document.getElementById("setMaintenance").checked = s.maintenance;
+                    document.getElementById("maintenanceStatusText").innerText = s.maintenance ? "ON" : "OFF";
+                }
+                if (s.maintenanceText) document.getElementById("setMaintText").value = s.maintenanceText;
+                if (s.maintenanceLinkLabel) document.getElementById("setMaintLinkLabel").value = s.maintenanceLinkLabel;
+                if (s.maintenanceLink) document.getElementById("setMaintLink").value = s.maintenanceLink;
+                if (typeof s.popupEnabled === "boolean") {
+                    document.getElementById("setPopupEnabled").checked = s.popupEnabled;
+                    document.getElementById("popupStatusText").innerText = s.popupEnabled ? "ON" : "OFF";
+                }
+                if (s.popupTitle) document.getElementById("setPopupTitle").value = s.popupTitle;
+                if (s.popupText) document.getElementById("setPopupText").value = s.popupText;
+                if (s.popupBtnLabel) document.getElementById("setPopupBtnLabel").value = s.popupBtnLabel;
+                if (s.popupBtnLink) document.getElementById("setPopupBtnLink").value = s.popupBtnLink;
+                if (typeof s.forceRedirectEnabled === "boolean") {
+                    document.getElementById("setForceRedirectEnabled").checked = s.forceRedirectEnabled;
+                    document.getElementById("forceRedirectStatusText").innerText = s.forceRedirectEnabled ? "ON" : "OFF";
+                }
+                if (s.forceRedirectLink) document.getElementById("setForceRedirectLink").value = s.forceRedirectLink;
+            }).catch(function() { });
+        }
+        window.loadSiteSettings = loadSiteSettings;
+
+        function saveSiteSettings() {
+            const data = {
+                name: document.getElementById("setName").value.trim(),
+                edition: document.getElementById("setEdition").value.trim(),
+                title: document.getElementById("setTitle").value.trim(),
+                tgLink: document.getElementById("setTg").value.trim(),
+                waLink: document.getElementById("setWa").value.trim(),
+                findPassLink: document.getElementById("setFindPass").value.trim(),
+                websiteLink: document.getElementById("setWebsite").value.trim()
+            };
+            update(ref(db, "siteSettings"), data).then(function() {
+                showToast("Site settings saved!");
+            }).catch(function() { showToast("Error saving settings!", true); });
+        }
+        window.saveSiteSettings = saveSiteSettings;
+
+        function switchSettingsTab(tab) {
+            document.querySelectorAll(".settings-card").forEach(function(c) {
+                c.style.display = (c.dataset.sec === tab) ? "" : "none";
+            });
+        }
+        window.switchSettingsTab = switchSettingsTab;
+
+        switchSettingsTab("general");
+
+        function saveMaintenance() {
+            const data = {
+                maintenance: document.getElementById("setMaintenance").checked,
+                maintenanceText: document.getElementById("setMaintText").value.trim(),
+                maintenanceLinkLabel: document.getElementById("setMaintLinkLabel").value.trim(),
+                maintenanceLink: document.getElementById("setMaintLink").value.trim()
+            };
+            update(ref(db, "siteSettings"), data).then(function() {
+                document.getElementById("maintenanceStatusText").innerText = data.maintenance ? "ON" : "OFF";
+                showToast(data.maintenance ? "Maintenance mode ON!" : "Maintenance mode OFF!");
+            }).catch(function() { showToast("Error saving maintenance!", true); });
+        }
+        window.saveMaintenance = saveMaintenance;
+
+        function savePopupSettings() {
+            const data = {
+                popupEnabled: document.getElementById("setPopupEnabled").checked,
+                popupTitle: document.getElementById("setPopupTitle").value.trim(),
+                popupText: document.getElementById("setPopupText").value.trim(),
+                popupBtnLabel: document.getElementById("setPopupBtnLabel").value.trim(),
+                popupBtnLink: document.getElementById("setPopupBtnLink").value.trim()
+            };
+            update(ref(db, "siteSettings"), data).then(function() {
+                document.getElementById("popupStatusText").innerText = data.popupEnabled ? "ON" : "OFF";
+                showToast(data.popupEnabled ? "Popup enabled!" : "Popup disabled!");
+            }).catch(function() { showToast("Error saving popup!", true); });
+        }
+        window.savePopupSettings = savePopupSettings;
+
+        function saveForceRedirect() {
+            const data = {
+                forceRedirectEnabled: document.getElementById("setForceRedirectEnabled").checked,
+                forceRedirectLink: document.getElementById("setForceRedirectLink").value.trim()
+            };
+            update(ref(db, "siteSettings"), data).then(function() {
+                document.getElementById("forceRedirectStatusText").innerText = data.forceRedirectEnabled ? "ON" : "OFF";
+                showToast(data.forceRedirectEnabled ? "Force redirect enabled!" : "Force redirect disabled!");
+            }).catch(function() { showToast("Error saving force redirect!", true); });
+        }
+        window.saveForceRedirect = saveForceRedirect;
+
+        function renderAppUpdateLive(u) {
+            const box = document.getElementById("appUpdateLiveBox");
+            const info = document.getElementById("appUpdateLiveInfo");
+            const isLive = !!u && u.enabled === true && (parseInt(u.latestVersion) || 0) > 0;
+            const name = (u && u.versionName) || ("v" + (u && u.latestVersion ? u.latestVersion : "?"));
+            const num = u ? (parseInt(u.latestVersion) || 0) : 0;
+            if (isLive) {
+                box.style.borderColor = "var(--green)";
+                info.innerHTML =
+                    "<span style='color:var(--green); font-weight:600;'>● LIVE — " + name + "</span><br>" +
+                    "Version number: <b>" + num + "</b> | Type: <b>" + (u.updateType === "apk" ? "Direct (app me download)" : "Link (browser)") + "</b><br>" +
+                    (u.updateNote ? "Note: " + u.updateNote + "<br>" : "") +
+                    "<span style='color:var(--muted); word-break:break-all;'>" + (u.updateLink || "") + "</span>";
+            } else {
+                box.style.borderColor = "var(--border)";
+                info.innerHTML = "<span style='color:var(--red); font-weight:600;'>● NO UPDATE RUNNING</span><br><span style='color:var(--muted);'>Abhi koi update push nahi hai — sab users apne current version par hain.</span>";
+            }
+        }
+        window.renderAppUpdateLive = renderAppUpdateLive;
+
+        function loadAppUpdate() {
+            get(ref(db, "appUpdate")).then(function(snap) {
+                const u = snap.exists() ? snap.val() : null;
+                renderAppUpdateLive(u);
+                if (!u) return;
+                if (u.latestVersion) document.getElementById("setUpdateLatest").value = u.latestVersion;
+                if (u.versionName) document.getElementById("setUpdateVersionName").value = u.versionName;
+                if (u.updateType) document.getElementById("setUpdateType").value = u.updateType;
+                if (u.updateLink) document.getElementById("setUpdateLink").value = u.updateLink;
+                if (u.updateNote) document.getElementById("setUpdateNote").value = u.updateNote;
+            }).catch(function() { });
+        }
+        window.loadAppUpdate = loadAppUpdate;
+
+        function saveAppUpdate() {
+            const num = parseInt(document.getElementById("setUpdateLatest").value) || 0;
+            const verName = document.getElementById("setUpdateVersionName").value.trim() || ("v" + (num || "?"));
+            const typeVal = document.getElementById("setUpdateType").value;
+            const link = document.getElementById("setUpdateLink").value.trim();
+            const note = document.getElementById("setUpdateNote").value.trim();
+            if (num <= 0) { showToast("Pehle Latest Version number dalo!", true); return; }
+            if (!link) { showToast("Update Link zaroori hai!", true); return; }
+            const ok = confirm(
+                "Update push karna confirm hai?\n\n" +
+                "Version: " + verName + " (number " + num + ")\n" +
+                "Type: " + (typeVal === "apk" ? "DIRECT — app me download+install" : "LINK — browser me khulega") + "\n" +
+                "Link: " + link + "\n\n" +
+                "Ye update SAB USERS ko turant milega. Agar number galat hai to CANCEL dabao."
+            );
+            if (!ok) return;
+            const data = {
+                enabled: true,
+                latestVersion: num,
+                versionName: document.getElementById("setUpdateVersionName").value.trim(),
+                updateType: typeVal,
+                updateLink: link,
+                updateNote: note
+            };
+            set(ref(db, "appUpdate"), data).then(function() {
+                renderAppUpdateLive(data);
+                showToast("Update pushed to users!");
+            }).catch(function() { showToast("Error saving update!", true); });
+        }
+        window.saveAppUpdate = saveAppUpdate;
+
+
+        document.getElementById("setMaintenance").addEventListener("change", function() {
+            document.getElementById("maintenanceStatusText").innerText = this.checked ? "ON" : "OFF";
+        });
+        document.getElementById("setPopupEnabled").addEventListener("change", function() {
+            document.getElementById("popupStatusText").innerText = this.checked ? "ON" : "OFF";
+        });
+        document.getElementById("setForceRedirectEnabled").addEventListener("change", function() {
+            document.getElementById("forceRedirectStatusText").innerText = this.checked ? "ON" : "OFF";
+        });
+        document.getElementById("setBannerEnabled").addEventListener("change", function() {
+            document.getElementById("bannerStatusText").innerText = this.checked ? "ON" : "OFF";
+        });
+
+        function loadSetupBanner() {
+            get(ref(db, "siteSettings")).then(function(snap) {
+                if (!snap.exists()) return;
+                const s = snap.val();
+                if (typeof s.setupBannerEnabled === "boolean") {
+                    document.getElementById("setBannerEnabled").checked = s.setupBannerEnabled;
+                    document.getElementById("bannerStatusText").innerText = s.setupBannerEnabled ? "ON" : "OFF";
+                }
+                if (s.setupBannerUrl) document.getElementById("setBannerUrl").value = s.setupBannerUrl;
+                if (s.setupVideoLink) document.getElementById("setSetupVideoLink").value = s.setupVideoLink;
+                if (s.setupBannerUrl) {
+                    document.getElementById("bannerPreview").style.display = "block";
+                    document.getElementById("bannerPreviewImg").src = s.setupBannerUrl;
+                }
+            }).catch(function() { });
+        }
+
+        function saveSetupBanner() {
+            const data = {
+                setupBannerEnabled: document.getElementById("setBannerEnabled").checked,
+                setupBannerUrl: document.getElementById("setBannerUrl").value.trim(),
+                setupVideoLink: document.getElementById("setSetupVideoLink").value.trim()
+            };
+            update(ref(db, "siteSettings"), data).then(function() {
+                document.getElementById("bannerStatusText").innerText = data.setupBannerEnabled ? "ON" : "OFF";
+                if (data.setupBannerUrl) {
+                    document.getElementById("bannerPreview").style.display = "block";
+                    document.getElementById("bannerPreviewImg").src = data.setupBannerUrl;
+                } else {
+                    document.getElementById("bannerPreview").style.display = "none";
+                }
+                showToast("Setup banner saved!");
+            }).catch(function() { showToast("Error saving banner!", true); });
+        }
+        window.saveSetupBanner = saveSetupBanner;
+    </script>
+</body>
+</html>
