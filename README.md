@@ -100,7 +100,7 @@ Upload the whole folder to any static host and open `index.html`. No build or np
 | `BannedDevices` | admin only | banned device ids |
 | `users` | admin only | registered users / devices |
 | `panelSettings` | admin only | GitHub token + owner + repo (locked UI, synced across devices) |
-| `NOXBHAI123` | admin only  | locked UI, synced across devices |
+| `BUNNY1234` | admin only  | locked UI, synced across devices |
 
 ## Security Notes
 
